@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#7c6af7"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Nifty Pulse"/>
+<meta name="description" content="GARP stock intelligence for NSE — long-term targets, buy zones, and live signals"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<title>Nifty Pulse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:'JetBrains Mono',monospace;overscroll-behavior:none;overflow-x:hidden}
+
+:root{
+  --bg:#0a0a0f;
+  --bg2:#0f0f1a;
+  --card:#13131e;
+  --card2:#1a1a28;
+  --border:#1e1e30;
+  --text:#e8e8f5;
+  --muted:#5a5a7a;
+  --accent:#7c6af7;
+  --accent2:#00b4d8;
+  --green:#00d68f;
+  --red:#ef4444;
+  --gold:#f5a623;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+.light{
+  --bg:#f0f0f8;
+  --bg2:#e8e8f2;
+  --card:#ffffff;
+  --card2:#f4f4fc;
+  --border:#ddddf0;
+  --text:#1a1a2e;
+  --muted:#8888aa;
+  --accent:#5b4de8;
+  --accent2:#0096c7;
+}
+
+body{background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--accent)44;border-radius:2px}
+
+/* HEADER */
+.header{
+  position:sticky;top:0;z-index:200;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  padding:calc(var(--safe-top) + 10px) 16px 10px;
+}
+.header-inner{display:flex;align-items:center;gap:12px;justify-content:space-between}
+.logo-wrap{display:flex;align-items:center;gap:10px;min-width:0}
+.logo-icon{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--green));
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 4px 20px var(--accent)44;
+}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:-.3px;white-space:nowrap;color:var(--text)}
+.logo-sub{font-size:8px;color:var(--muted);letter-spacing:2px;margin-top:1px}
+.header-right{display:flex;gap:8px;flex-shrink:0}
+.icon-btn{
+  padding:7px 12px;border-radius:8px;font-size:11px;font-weight:600;
+  font-family:'JetBrains Mono',monospace;cursor:pointer;border:1px solid var(--border);
+  background:var(--card);color:var(--text);letter-spacing:.5px;transition:all .15s;
+  white-space:nowrap;
+}
+.icon-btn:hover{opacity:.8}
+.icon-btn.accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* MARKET STATUS BAR */
+.market-bar{
+  padding:8px 16px;display:flex;align-items:center;justify-content:space-between;
+  background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px;
+  font-size:10px;
+}
+.market-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;
+  font-size:10px;font-weight:600;letter-spacing:1px;
+}
+.market-badge.open{background:#00d68f22;border:1px solid #00d68f55;color:var(--green)}
+.market-badge.closed{background:#ef444422;border:1px solid #ef444455;color:var(--red)}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.dot.open{background:var(--green)}
+.dot.closed{background:var(--red)}
+.pulse-anim{animation:pulseAnim 2s infinite}
+@keyframes pulseAnim{0%,100%{opacity:1}50%{opacity:.4}}
+.stats-row{display:flex;gap:12px;flex-wrap:wrap}
+.stat-chip{display:flex;flex-direction:column;align-items:center;gap:1px}
+.stat-val{font-size:13px;font-weight:700;font-family:'Syne',sans-serif}
+.stat-lbl{font-size:8px;color:var(--muted);letter-spacing:1px}
+
+/* FILTERS */
+.filters{
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  background:var(--bg);display:flex;flex-direction:column;gap:10px;
+}
+.search-row{display:flex;gap:8px;align-items:center}
+.search-wrap{
+  flex:1;display:flex;align-items:center;gap:6px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:8px 12px;
+}
+.search-wrap input{background:transparent;border:none;outline:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;width:100%}
+.search-wrap input::placeholder{color:var(--muted)}
+.filter-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;-ms-overflow-style:none;scrollbar-width:none}
+.filter-scroll::-webkit-scrollbar{display:none}
+select.filter-sel{
+  background:var(--card);color:var(--text);border:1px solid var(--border);
+  border-radius:8px;padding:6px 8px;font-size:10px;font-family:'JetBrains Mono',monospace;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;outline:none;
+}
+.sort-row{display:flex;gap:6px;align-items:center;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
+.sort-row::-webkit-scrollbar{display:none}
+.sort-lbl{font-size:9px;color:var(--muted);letter-spacing:1px;white-space:nowrap;flex-shrink:0}
+.sort-btn{
+  padding:4px 10px;border-radius:6px;font-size:9px;font-weight:600;letter-spacing:.5px;
+  background:var(--card);color:var(--muted);border:1px solid var(--border);
+  cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'JetBrains Mono',monospace;
+  transition:all .15s;
+}
+.sort-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.view-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex-shrink:0}
+.view-btn{padding:6px 10px;font-size:12px;background:var(--card);color:var(--muted);border:none;cursor:pointer;transition:all .15s}
+.view-btn.active{background:var(--accent);color:#fff}
+
+/* MAIN */
+main{padding:16px;padding-bottom:calc(var(--safe-bot) + 80px)}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+
+/* STOCK CARD */
+.scard{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:16px;cursor:pointer;transition:transform .2s,box-shadow .2s;
+  position:relative;overflow:hidden;
+}
+.scard:hover{transform:translateY(-2px)}
+.scard:active{transform:scale(.98)}
+.scard-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+.scard-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px}
+.scard-name{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text);margin-bottom:4px;line-height:1.2}
+.scard-tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-size:8px;padding:2px 6px;border-radius:4px;font-weight:600;letter-spacing:.5px}
+.tag-cap{background:var(--accent)22;color:var(--accent)}
+.tag-sector{background:var(--muted)22;color:var(--muted)}
+.scard-price-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.scard-price{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:var(--text)}
+.scard-chg{font-size:11px;margin-top:2px}
+.scard-rec{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;
+}
+.rec-badge{
+  padding:5px 12px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:1px;
+  font-family:'Syne',sans-serif;
+}
+.prob-text{font-size:10px;color:var(--muted)}
+.prob-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:10px;overflow:hidden}
+.prob-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.mini-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+.mini-cell{background:var(--card2);border-radius:6px;padding:5px 6px;text-align:center}
+.mini-lbl{font-size:7px;color:var(--muted);letter-spacing:.5px;margin-bottom:2px}
+.mini-val{font-size:10px;font-weight:600}
+.buy-zone-banner{
+  padding:8px 10px;border-radius:8px;display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:8px;
+}
+.bz-lbl{font-size:9px;letter-spacing:.5px;font-weight:600}
+.bz-val{font-size:12px;font-weight:700;font-family:'Syne',sans-serif}
+.cagr-row{display:flex;gap:6px;flex-wrap:wrap}
+.cagr-chip{font-size:8px;padding:2px 7px;border-radius:4px}
+.scard-hint{font-size:8px;color:var(--muted);text-align:right;margin-top:6px}
+
+/* SCORE RING SVG inline */
+.score-ring-wrap{flex-shrink:0}
+
+/* TABLE VIEW */
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead th{
+  padding:10px 12px;text-align:left;font-size:8px;color:var(--muted);
+  letter-spacing:1.5px;font-weight:600;background:var(--card);
+  border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;
+}
+thead th:hover{color:var(--text)}
+tbody tr{cursor:pointer;transition:background .1s}
+tbody tr:nth-child(even){background:var(--bg)}
+tbody tr:hover{background:var(--accent)11}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--border)55;white-space:nowrap;vertical-align:middle}
+.td-name{font-weight:600;color:var(--text);font-size:11px}
+.td-sub{font-size:8px;color:var(--muted);margin-top:2px}
+
+/* DETAIL PANEL */
+.overlay{position:fixed;inset:0;background:#00000088;z-index:300;backdrop-filter:blur(6px)}
+.panel{
+  position:fixed;right:0;top:0;bottom:0;width:min(480px,100vw);
+  background:var(--bg);border-left:1px solid var(--border);
+  overflow-y:auto;z-index:301;
+  animation:panelIn .3s cubic-bezier(.4,0,.2,1);
+  padding-bottom:calc(var(--safe-bot) + 20px);
+}
+@keyframes panelIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* GARP Score section */
+.garp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.garp-cell{background:var(--card);border-radius:10px;padding:12px;border:1px solid var(--border)}
+.garp-lbl{font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:4px}
+.garp-val{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text)}
+.garp-status{font-size:9px;margin-top:3px}
+
+.section-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.section-head span{font-size:9px;color:var(--muted);letter-spacing:2px;font-weight:600}
+.section-head-line{flex:1;height:1px;background:var(--border)}
+
+/* TARGET BOX */
+.target-box{
+  border-radius:14px;padding:20px;margin-bottom:16px;
+  border:1px solid;display:flex;flex-direction:column;gap:12px;
+}
+.target-main{display:flex;justify-content:space-between;align-items:center}
+.target-price{font-family:'Syne',sans-serif;font-weight:800;font-size:28px}
+.target-timeframe{font-size:9px;letter-spacing:1px;margin-top:3px}
+.target-upside{font-family:'Syne',sans-serif;font-weight:700;font-size:20px}
+.horizon-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.horizon-cell{background:var(--bg2);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--border)}
+.hz-lbl{font-size:8px;color:var(--muted);letter-spacing:.5px;margin-bottom:4px}
+.hz-price{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.hz-upside{font-size:8px;margin-top:2px}
+
+/* BUY ZONE */
+.buy-zone-box{border-radius:14px;padding:16px;margin-bottom:16px;border:1px solid var(--green)44;background:var(--green)08}
+.bz-range{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.bz-low{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--green)}
+.bz-high{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--gold)}
+.bz-arrow{font-size:20px;color:var(--muted)}
+.bz-bar{height:10px;background:var(--border);border-radius:5px;position:relative;margin-bottom:8px;overflow:hidden}
+.bz-fill{position:absolute;left:0;top:0;height:100%;border-radius:5px}
+.bz-current{position:absolute;top:-3px;height:16px;width:3px;background:var(--text);border-radius:2px}
+.bz-notes{font-size:10px;color:var(--muted);line-height:1.6}
+
+/* FACTORS */
+.factor-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.factor-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 10px;border-radius:8px;background:var(--card);border:1px solid var(--border);
+}
+.factor-left{display:flex;align-items:center;gap:8px}
+.factor-label{font-size:10px;color:var(--text)}
+.factor-val{font-size:10px;font-weight:600}
+.factor-row.bull{border-color:var(--green)33;background:var(--green)06}
+.factor-row.bear{border-color:var(--red)33;background:var(--red)06}
+
+/* MINI CHART */
+.sparkline{margin-bottom:16px}
+
+/* BOTTOM NAV (mobile) */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;align-items:stretch;
+  padding-bottom:var(--safe-bot);
+  z-index:100;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:8px 4px;cursor:pointer;transition:all .15s;gap:3px;
+}
+.nav-item:hover{background:var(--accent)11}
+.nav-item.active .nav-icon{color:var(--accent)}
+.nav-item.active .nav-label{color:var(--accent)}
+.nav-icon{font-size:18px;color:var(--muted)}
+.nav-label{font-size:8px;color:var(--muted);letter-spacing:1px;font-weight:600}
+
+/* GARP BADGE */
+.garp-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:1px;
+  background:var(--gold)22;border:1px solid var(--gold)44;color:var(--gold);
+}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:.5}
+
+/* RESPONSIVE */
+@media(max-width:480px){
+  .grid{grid-template-columns:1fr}
+  .scard-price{font-size:20px}
+  .header-inner{gap:8px}
+}
+@media(min-width:768px){
+  .bottom-nav{display:none}
+  main{padding-bottom:24px}
+}
+
+/* ANIMATIONS */
+.fade-in{animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.stagger > *{animation:fadeIn .3s ease both}
+.stagger > *:nth-child(1){animation-delay:.02s}
+.stagger > *:nth-child(2){animation-delay:.04s}
+.stagger > *:nth-child(3){animation-delay:.06s}
+.stagger > *:nth-child(4){animation-delay:.08s}
+.stagger > *:nth-child(5){animation-delay:.10s}
+.stagger > *:nth-child(6){animation-delay:.12s}
+.stagger > *:nth-child(n+7){animation-delay:.14s}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script type="module">
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const STOCKS = [
+  { name:"KRN Heat Exchanger",       ticker:"KRNHEATXCH",  cap:"Smallcap", sector:"Industries",          cagr3:null, cagr5:null, buyPrice:633,  signal:"U" },
+  { name:"Shilchar Technologies",    ticker:"SHILCHARTECH", cap:"Smallcap", sector:"Energy-Power",        cagr3:232,  cagr5:138,  buyPrice:3084, signal:"S" },
+  { name:"Transformers & Rectifiers",ticker:"TRIL",         cap:"Smallcap", sector:"Energy-Power",        cagr3:230,  cagr5:180,  buyPrice:229,  signal:"S" },
+  { name:"Mazagon Dock",             ticker:"MAZDOCK",      cap:"Midcap",   sector:"Defence-Shipping",    cagr3:163,  cagr5:432,  buyPrice:2286, signal:"S" },
+  { name:"Anant Raj",                ticker:"ANANTRAJ",     cap:"Smallcap", sector:"Industries",          cagr3:118,  cagr5:111,  buyPrice:501,  signal:"S" },
+  { name:"HBL Power",                ticker:"HBLPOWER",     cap:"Smallcap", sector:"Railways",            cagr3:118,  cagr5:111,  buyPrice:702,  signal:"S" },
+  { name:"BSE",                      ticker:"BSE",          cap:"Midcap",   sector:"Financials",          cagr3:110,  cagr5:86,   buyPrice:2623, signal:"U" },
+  { name:"Motilal Oswal Fin Svc",    ticker:"MOTILALOFS",   cap:"Smallcap", sector:"Financials",          cagr3:106,  cagr5:83,   buyPrice:713,  signal:"S" },
+  { name:"V2 Retail",                ticker:"V2RETAIL",     cap:"Smallcap", sector:"Consumer Retail",     cagr3:103,  cagr5:72,   buyPrice:1816, signal:"S" },
+  { name:"Zen Technologies",         ticker:"ZENTEC",       cap:"Smallcap", sector:"Defence",             cagr3:101,  cagr5:96,   buyPrice:1192, signal:"S" },
+  { name:"Shakti Pumps",             ticker:"SHAKTIPUMP",   cap:"Smallcap", sector:"Industries",          cagr3:100,  cagr5:85,   buyPrice:582,  signal:"S" },
+  { name:"GRSE",                     ticker:"GRSE",         cap:"Smallcap", sector:"Defence-Shipping",    cagr3:89,   cagr5:48,   buyPrice:2199, signal:"S" },
+  { name:"CemIndia Projects",        ticker:"CEMINDIA",     cap:"Smallcap", sector:"Industries",          cagr3:88,   cagr5:61,   buyPrice:577,  signal:"D" },
+  { name:"HAL",                      ticker:"HAL",          cap:"Largecap", sector:"Defence",             cagr3:87,   cagr5:60,   buyPrice:3945, signal:"S" },
+  { name:"Anand Rathi",              ticker:"ANANDRATHI",   cap:"Smallcap", sector:"Financials",          cagr3:80,   cagr5:50,   buyPrice:2679, signal:"D" },
+  { name:"Marksans Pharma",          ticker:"MARKSANS",     cap:"Smallcap", sector:"Pharma",              cagr3:73,   cagr5:82,   buyPrice:155,  signal:"S" },
+  { name:"TVS Motors",               ticker:"TVSMOTOR",     cap:"Largecap", sector:"Consumer Disc.",      cagr3:55,   cagr5:39,   buyPrice:3496, signal:"U" },
+  { name:"Indian Hotels",            ticker:"INDHOTEL",     cap:"Largecap", sector:"Travel & Hotels",     cagr3:53,   cagr5:36,   buyPrice:634,  signal:"U" },
+  { name:"Mahindra & Mahindra",      ticker:"M&M",          cap:"Largecap", sector:"Consumer Disc.",      cagr3:46,   cagr5:39,   buyPrice:3300, signal:"S" },
+  { name:"BEML",                     ticker:"BEML",         cap:"Smallcap", sector:"Railways",            cagr3:43,   cagr5:41,   buyPrice:1528, signal:"S" },
+  { name:"Max Healthcare",           ticker:"MAXHEALTH",    cap:"Midcap",   sector:"Healthcare",          cagr3:41,   cagr5:30,   buyPrice:1013, signal:"S" },
+  { name:"Fortis",                   ticker:"FORTIS",       cap:"Midcap",   sector:"Healthcare",          cagr3:36,   cagr5:41,   buyPrice:842,  signal:"U" },
+  { name:"Bharti Airtel",            ticker:"BHARTIARTL",   cap:"Largecap", sector:"Telecom",             cagr3:35,   cagr5:32,   buyPrice:1925, signal:"S" },
+  { name:"CDSL",                     ticker:"CDSL",         cap:"Smallcap", sector:"Financials",          cagr3:29,   cagr5:69,   buyPrice:1225, signal:"U" },
+  { name:"Vedanta",                  ticker:"VEDL",         cap:"Largecap", sector:"Metals",              cagr3:15,   cagr5:25,   buyPrice:638,  signal:"S" },
+  { name:"Skygold",                  ticker:"SKYGOLD",      cap:"Smallcap", sector:"Jewellery",           cagr3:236,  cagr5:235,  buyPrice:336,  signal:"U" },
+  { name:"Balu Forge",               ticker:"BALUFORGE",    cap:"Smallcap", sector:"Metals",              cagr3:92,   cagr5:79,   buyPrice:457,  signal:"U" },
+  { name:"BDL",                      ticker:"BDL",          cap:"Midcap",   sector:"Defence",             cagr3:71,   cagr5:76,   buyPrice:1143, signal:"D" },
+  { name:"Transrail",                ticker:"TRANSRAIL",    cap:"Smallcap", sector:"Energy-Power",        cagr3:null, cagr5:null, buyPrice:492,  signal:"U" },
+  { name:"MCX",                      ticker:"MCX",          cap:"Midcap",   sector:"Financials",          cagr3:79,   cagr5:36,   buyPrice:2107, signal:"U" },
+  { name:"Narayana Hrudalya",        ticker:"NH",           cap:"Midcap",   sector:"Healthcare",          cagr3:45,   cagr5:46,   buyPrice:1697, signal:"S" },
+  { name:"ITC Hotels",               ticker:"ITCHOTELS",    cap:"Midcap",   sector:"Travel & Hotels",     cagr3:null, cagr5:null, buyPrice:175,  signal:"S" },
+  { name:"BEL",                      ticker:"BEL",          cap:"Largecap", sector:"Defence",             cagr3:58,   cagr5:60,   buyPrice:390,  signal:"S" },
+  { name:"Vishal Mega Mart",         ticker:"VISHALMEGA",   cap:"Midcap",   sector:"Consumer Retail",     cagr3:null, cagr5:null, buyPrice:117,  signal:"D" },
+  { name:"Anthem Biosciences",       ticker:"ANTHEMBIO",    cap:"Midcap",   sector:"Pharma",              cagr3:null, cagr5:null, buyPrice:585,  signal:"U" },
+  { name:"Laurus Labs",              ticker:"LAURUSLABS",   cap:"Midcap",   sector:"Pharma",              cagr3:13,   cagr5:33,   buyPrice:916,  signal:"U" },
+  { name:"Paytm",                    ticker:"PAYTM",        cap:"Midcap",   sector:"Financials",          cagr3:25,   cagr5:null, buyPrice:1099, signal:"D" },
+  { name:"Va Tech Wabag",            ticker:"WABAG",        cap:"Smallcap", sector:"Industries",          cagr3:85,   cagr5:62,   buyPrice:1034, signal:"U" },
+  { name:"Windlas Biotech",          ticker:"WINDLAS",      cap:"Smallcap", sector:"Pharma",              cagr3:69,   cagr5:null, buyPrice:765,  signal:"S" },
+  { name:"Coforge",                  ticker:"COFORGE",      cap:"Midcap",   sector:"IT",                  cagr3:28,   cagr5:33,   buyPrice:1185, signal:"D" },
+  { name:"Godfrey Phillips",         ticker:"GODFRYPHLP",   cap:"Midcap",   sector:"FMCG",                cagr3:110,  cagr5:62,   buyPrice:1910, signal:"S" },
+  { name:"PG Electroplast",          ticker:"PGEL",         cap:"Smallcap", sector:"Consumer Disc.",      cagr3:82,   cagr5:156,  buyPrice:499,  signal:"S" },
+  { name:"Pricol",                   ticker:"PRICOL",       cap:"Smallcap", sector:"Consumer Disc.",      cagr3:39,   cagr5:64,   buyPrice:569,  signal:"U" },
+  { name:"Radico Khaitan",           ticker:"RADICO",       cap:"Midcap",   sector:"FMCG",                cagr3:40,   cagr5:48,   buyPrice:2720, signal:"U" },
+  { name:"Cupid",                    ticker:"CUPID",        cap:"Smallcap", sector:"Consumer Disc.",      cagr3:79,   cagr5:37,   buyPrice:373,  signal:"S" },
+  { name:"NSDL",                     ticker:"NSDL",         cap:"Smallcap", sector:"Financials",          cagr3:null, cagr5:null, buyPrice:932,  signal:"D" },
+  { name:"Apollo Microsystems",      ticker:"APOLLOMICRO",  cap:"Smallcap", sector:"Defence",             cagr3:133,  cagr5:93,   buyPrice:219,  signal:"D" },
+  { name:"AXISCADES Technologies",   ticker:"AXISCADES",    cap:"Smallcap", sector:"Engineering",         cagr3:78,   cagr5:107,  buyPrice:1104, signal:"U" },
+  { name:"Groww",                    ticker:"GROWW",        cap:"Largecap", sector:"Financials",          cagr3:null, cagr5:null, buyPrice:151,  signal:"S" },
+  { name:"Anand Rathi Brokers",      ticker:"ARWL",         cap:"Smallcap", sector:"Financials",          cagr3:null, cagr5:null, buyPrice:533,  signal:"D" },
+  { name:"Muthoot Finance",          ticker:"MUTHOOTFIN",   cap:"Largecap", sector:"Financials",          cagr3:51,   cagr5:27,   buyPrice:3484, signal:"D" },
+  { name:"Syrma SGS Technology",     ticker:"SYRMA",        cap:"Smallcap", sector:"Consumer Disc.",      cagr3:48,   cagr5:null, buyPrice:784,  signal:"U" },
+];
+
+// ─── MARKET HELPERS ──────────────────────────────────────────────────────────
+function isMarketOpen(){
+  const now = new Date();
+  const ist = new Date(now.toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
+  const day = ist.getDay(), h = ist.getHours(), m = ist.getMinutes();
+  const t = h*60+m;
+  return day>=1 && day<=5 && t>=555 && t<=930;
+}
+
+// ─── ANALYSIS ENGINE ─────────────────────────────────────────────────────────
+function analyzeStock(stock){
+  const seed = stock.ticker.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const now = Date.now();
+  const rng = (min,max,phase=0)=>min+(max-min)*((Math.sin(now/15000+seed*0.7+phase)+1)/2);
+  const snap = v=>+v.toFixed(2);
+
+  // ── Price simulation (anchored to buy price)
+  const drift = Math.sin(now/20000+seed)*0.04 + Math.cos(now/35000+seed*1.3)*0.02;
+  const noise = (Math.random()-0.5)*0.008;
+  const price = snap(stock.buyPrice*(1+drift+noise));
+  const prevClose = snap(stock.buyPrice*(1+drift-0.005));
+  const change = snap(price-prevClose);
+  const changePct = snap((change/prevClose)*100);
+
+  // ── Technical indicators
+  const rsi     = snap(rng(25,75,1));
+  const macd    = snap(rng(-12,14,2));
+  const ma20    = snap(stock.buyPrice*(1+rng(-0.03,0.03,3)));
+  const ma50    = snap(stock.buyPrice*(1+rng(-0.05,0.04,4)));
+  const ma200   = snap(stock.buyPrice*(1+rng(-0.12,0.08,5)));
+  const bbUp    = snap(price*1.06);
+  const bbLow   = snap(price*0.94);
+  const stoch   = snap(rng(15,85,6));
+  const adx     = snap(rng(12,48,7));
+  const volume  = Math.floor(rng(40000,350000,8));
+  const avgVol  = 150000;
+  const cci     = snap(rng(-180,180,9));
+  const mfi     = snap(rng(20,80,10));
+  const atr     = snap(price*rng(0.01,0.04,11));
+  const obv     = Math.floor(rng(-5000000,5000000,12));
+  const vwap    = snap(price*(1+rng(-0.015,0.015,13)));
+
+  // ── Fundamentals (seeded deterministic)
+  const pe       = snap(8 + (seed%25) + Math.random()*3);
+  const pbv      = snap(0.8 + (seed%6) + Math.random()*1.5);
+  const eps_gr   = snap(10 + (seed%30) + Math.random()*10);  // EPS growth %
+  const roe      = snap(8 + (seed%22) + Math.random()*5);
+  const roce     = snap(6 + (seed%18) + Math.random()*4);
+  const de_ratio = snap((seed%3)*0.4 + Math.random()*0.6);
+  const pat_gr   = snap(12 + (seed%28) + Math.random()*8);   // PAT growth
+  const rev_gr   = snap(8 + (seed%20) + Math.random()*6);
+  const div_yld  = snap((seed%3)*0.5 + Math.random()*1.2);
+  const curr_rat = snap(1.2 + (seed%3)*0.4 + Math.random()*0.5);
+
+  // ── GARP Score (PEG-based + growth quality)
+  const peg = pe / Math.max(eps_gr, 1);  // <1 = ideal for GARP
+  const garpScore = Math.max(0, Math.min(100,
+    (peg < 0.5 ? 30 : peg < 1 ? 20 : peg < 1.5 ? 10 : 0) +
+    (eps_gr > 25 ? 20 : eps_gr > 15 ? 12 : 5) +
+    (roe > 20 ? 15 : roe > 12 ? 8 : 2) +
+    (de_ratio < 0.5 ? 10 : de_ratio < 1 ? 5 : 0) +
+    (curr_rat > 2 ? 10 : curr_rat > 1.5 ? 6 : 0) +
+    (pat_gr > 20 ? 15 : pat_gr > 10 ? 8 : 3)
+  ));
+
+  // ── Signal scoring
+  let techScore = 0, fundScore = 0, factors = [];
+
+  // Technical
+  if(rsi<30){techScore+=22;factors.push({l:"RSI Oversold",v:`${rsi}`,bull:true,cat:"tech"})}
+  else if(rsi>70){techScore-=15;factors.push({l:"RSI Overbought",v:`${rsi}`,bull:false,cat:"tech"})}
+  else{techScore+=5;factors.push({l:"RSI Neutral",v:`${rsi}`,bull:null,cat:"tech"})}
+
+  if(macd>0){techScore+=18;factors.push({l:"MACD Bullish",v:`+${macd}`,bull:true,cat:"tech"})}
+  else{techScore-=12;factors.push({l:"MACD Bearish",v:`${macd}`,bull:false,cat:"tech"})}
+
+  if(price<ma20){techScore+=10;factors.push({l:"Below 20-Day MA",v:`₹${ma20}`,bull:true,cat:"tech"})}
+  else factors.push({l:"Above 20-Day MA",v:`₹${ma20}`,bull:false,cat:"tech"})
+
+  if(price<ma50){techScore+=10;factors.push({l:"Below 50-Day MA",v:`₹${ma50}`,bull:true,cat:"tech"})}
+  if(price>ma200){techScore+=8;factors.push({l:"Above 200-Day MA",v:`₹${ma200}`,bull:true,cat:"tech"})}
+
+  if(stoch<20){techScore+=14;factors.push({l:"Stochastic Oversold",v:`${stoch}`,bull:true,cat:"tech"})}
+  else if(stoch>80){techScore-=12;factors.push({l:"Stochastic OB",v:`${stoch}`,bull:false,cat:"tech"})}
+
+  if(adx>25){techScore+=10;factors.push({l:"Strong ADX Trend",v:`${adx}`,bull:true,cat:"tech"})}
+  if(price<bbLow){techScore+=16;factors.push({l:"Below Bollinger Low",v:`₹${bbLow}`,bull:true,cat:"tech"})}
+  if(volume>avgVol*1.5){techScore+=8;factors.push({l:"Above Avg Volume",v:volume.toLocaleString("en-IN"),bull:true,cat:"tech"})}
+  if(Math.abs(cci)>100){techScore+=(cci<-100?12:-8);factors.push({l:`CCI ${cci<0?"Oversold":"Overbought"}`,v:`${cci}`,bull:cci<-100,cat:"tech"})}
+  if(price<vwap){techScore+=6;factors.push({l:"Below VWAP",v:`₹${vwap}`,bull:true,cat:"tech"})}
+
+  // Fundamental
+  if(pe<15){fundScore+=20;factors.push({l:"Low P/E Ratio",v:`${pe}x`,bull:true,cat:"fund"})}
+  else if(pe>35){fundScore-=15;factors.push({l:"High P/E Ratio",v:`${pe}x`,bull:false,cat:"fund"})}
+  if(eps_gr>20){fundScore+=18;factors.push({l:"Strong EPS Growth",v:`${eps_gr}%`,bull:true,cat:"fund"})}
+  if(roe>15){fundScore+=14;factors.push({l:"High ROE",v:`${roe}%`,bull:true,cat:"fund"})}
+  if(de_ratio<0.5){fundScore+=10;factors.push({l:"Low Debt/Equity",v:de_ratio,bull:true,cat:"fund"})}
+  if(pat_gr>20){fundScore+=14;factors.push({l:"Strong PAT Growth",v:`${pat_gr}%`,bull:true,cat:"fund"})}
+  if(curr_rat>2){fundScore+=8;factors.push({l:"Healthy Current Ratio",v:curr_rat,bull:true,cat:"fund"})}
+  if(peg<1){fundScore+=16;factors.push({l:"PEG < 1 (GARP Sweet Spot)",v:snap(peg),bull:true,cat:"garp"})}
+  else{factors.push({l:"PEG > 1 (Priced for Growth)",v:snap(peg),bull:false,cat:"garp"})}
+
+  // CAGR bonus
+  if(stock.cagr3>100) fundScore+=12;
+  if(stock.cagr5>100) fundScore+=10;
+  if(stock.signal==="S") fundScore+=8;
+
+  const totalScore = Math.max(0,Math.min(100, Math.round((techScore*0.4 + fundScore*0.6 + garpScore*0.3) / 1.3 + 30)));
+  const probability = Math.min(95,Math.max(5,totalScore));
+
+  let recommendation="HOLD", recColor="#f5a623";
+  if(totalScore>=75){recommendation="STRONG BUY";recColor="#00d68f"}
+  else if(totalScore>=60){recommendation="BUY";recColor="#4ade80"}
+  else if(totalScore<=25){recommendation="AVOID";recColor="#ef4444"}
+  else if(totalScore<=42){recommendation="CAUTION";recColor="#fb923c"}
+
+  // ── LONG TERM TARGETS (GARP-based)
+  const avgCagr = ((stock.cagr3||15)+(stock.cagr5||15))/2;
+  const growthFactor = Math.min(avgCagr/100, 1.5);
+  const garpMultiplier = Math.max(1, peg < 1 ? 2.5 : peg < 1.5 ? 2.0 : 1.4);
+
+  const t1 = snap(price * (1 + Math.max(0.15, growthFactor*0.4) * garpMultiplier));  // 1-yr
+  const t2 = snap(price * (1 + Math.max(0.30, growthFactor*0.8) * garpMultiplier));  // 2-yr
+  const t3 = snap(price * (1 + Math.max(0.60, growthFactor*1.6) * garpMultiplier));  // 3-yr
+
+  const upside1 = snap(((t1-price)/price)*100);
+  const upside2 = snap(((t2-price)/price)*100);
+  const upside3 = snap(((t3-price)/price)*100);
+
+  // ── BUY ZONE (support levels)
+  const support1 = snap(price * (1 - atr*2/price));          // 1x ATR below
+  const support2 = snap(Math.min(price*0.92, ma20*0.98));    // near 20MA support
+  const idealBuy  = snap((support1+support2)/2);
+  const buyZoneLow = snap(Math.min(support1,support2)*0.99);
+  const buyZoneHigh= snap(idealBuy*1.02);
+
+  const bzPct = Math.max(0,Math.min(100,((price-buyZoneLow)/(buyZoneHigh*1.15-buyZoneLow))*100));
+
+  const buyNow = price <= buyZoneHigh;
+  const waitForDip = price > buyZoneHigh && price < stock.buyPrice * 1.1;
+
+  return {
+    price, change, changePct, volume, avgVol,
+    rsi, macd, ma20, ma50, ma200, bbUp, bbLow, stoch, adx, cci, mfi, atr, vwap, obv,
+    pe, pbv, eps_gr, roe, roce, de_ratio, pat_gr, rev_gr, div_yld, curr_rat, peg,
+    garpScore, techScore: Math.max(0,techScore), fundScore: Math.max(0,fundScore),
+    totalScore, probability, recommendation, recColor,
+    factors,
+    t1, t2, t3, upside1, upside2, upside3,
+    idealBuy, buyZoneLow, buyZoneHigh, bzPct, buyNow, waitForDip,
+  };
+}
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let state = {
+  dark: true,
+  stocks: STOCKS,
+  data: {},
+  marketOpen: false,
+  lastUpdated: null,
+  search: "",
+  sector: "All",
+  cap: "All",
+  signal: "All",
+  rec: "All",
+  sort: "score",
+  sortDir: "desc",
+  view: "grid",    // grid | table
+  tab: "all",      // all | watchlist | garp
+  selected: null,
+  watchlist: JSON.parse(localStorage.getItem("np_watchlist")||"[]"),
+  detailTab: "overview",
+};
+
+const SECTORS = ["All",...new Set(STOCKS.map(s=>s.sector))];
+const CAPS = ["All","Smallcap","Midcap","Largecap"];
+
+// ─── RENDER HELPERS ──────────────────────────────────────────────────────────
+function fmt(n){ return typeof n==="number"?n.toLocaleString("en-IN"):n; }
+function pct(n){ return n>=0?`+${n}%`:`${n}%`; }
+function clr(cond){ return cond?"var(--green)":"var(--red)"; }
+
+function scoreRingSVG(score,color,size=52){
+  const r=(size-8)/2, c=size/2, circ=2*Math.PI*r;
+  const fill=circ*(1-score/100);
+  return `<svg width="${size}" height="${size}" style="transform:rotate(-90deg)">
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="4"/>
+    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
+      stroke-dasharray="${circ}" stroke-dashoffset="${fill}" stroke-linecap="round"
+      style="transition:stroke-dashoffset 1s ease"/>
+    <text x="${c}" y="${c}" text-anchor="middle" dominant-baseline="middle"
+      style="transform:rotate(90deg);transform-origin:${c}px ${c}px;fill:${color};font-size:${size*.21}px;font-weight:700;font-family:Syne,sans-serif">
+      ${score}
+    </text>
+  </svg>`;
+}
+
+function sparkSVG(seed, color, width=120, height=36){
+  const pts = [];
+  for(let i=0;i<20;i++){
+    const x=i*(width/19);
+    const y=height/2 - Math.sin(i*0.7+seed*0.1)*12 - Math.cos(i*0.3+seed*0.2)*6 + (Math.random()-0.5)*4;
+    pts.push(`${x},${Math.max(2,Math.min(height-2,y))}`);
+  }
+  const poly=pts.join(" ");
+  const lastPt=pts[pts.length-1];
+  const [lx,ly]=lastPt.split(",");
+  return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    <defs><linearGradient id="sg${seed}" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity=".3"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    <polygon points="${poly} ${width},${height} 0,${height}" fill="url(#sg${seed})"/>
+    <polyline points="${poly}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${lx}" cy="${ly}" r="3" fill="${color}"/>
+  </svg>`;
+}
+
+function recBadge(rec,color){
+  return `<span class="rec-badge" style="background:${color}22;border:1px solid ${color}55;color:${color}">${rec}</span>`;
+}
+
+// ─── CARD RENDERER ───────────────────────────────────────────────────────────
+function renderCard(s,d){
+  const isUp=d.change>=0;
+  const isWL=state.watchlist.includes(s.ticker);
+  const bzColor = d.buyNow?"var(--green)":d.waitForDip?"var(--gold)":"var(--red)";
+  const bzText  = d.buyNow?"✓ BUY ZONE":d.waitForDip?"⟳ WAIT FOR DIP":"⬆ EXTENDED";
+
+  return `<div class="scard" data-ticker="${s.ticker}" style="box-shadow:0 2px 20px ${d.recColor}18">
+    <div class="scard-accent" style="background:linear-gradient(90deg,${d.recColor},${d.recColor}44)"></div>
+    <div class="scard-head">
+      <div style="min-width:0;flex:1">
+        <div class="scard-name">${s.name}</div>
+        <div class="scard-tags">
+          <span class="tag tag-cap">${s.cap}</span>
+          <span class="tag tag-sector">${s.sector}</span>
+          ${d.garpScore>60?`<span class="tag" style="background:var(--gold)22;color:var(--gold)">◈ GARP</span>`:""}
+        </div>
+      </div>
+      <div class="score-ring-wrap">${scoreRingSVG(d.totalScore,d.recColor,52)}</div>
+    </div>
+
+    <div class="scard-price-row">
+      <div>
+        <div class="scard-price">₹${fmt(d.price)}</div>
+        <div class="scard-chg" style="color:${isUp?"var(--green)":"var(--red)"}">
+          ${isUp?"▲":"▼"} ₹${Math.abs(d.change).toFixed(2)} (${Math.abs(d.changePct).toFixed(2)}%)
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:8px;color:var(--muted);margin-bottom:2px">3Y TARGET</div>
+        <div style="font-size:14px;font-weight:700;font-family:Syne,sans-serif;color:var(--green)">₹${fmt(d.t3)}</div>
+        <div style="font-size:9px;color:var(--green)">+${d.upside3}% upside</div>
+      </div>
+    </div>
+
+    <div class="scard-rec">
+      ${recBadge(d.recommendation,d.recColor)}
+      <span class="prob-text">Buy prob: <b style="color:${d.recColor}">${d.probability}%</b></span>
+    </div>
+    <div class="prob-bar"><div class="prob-fill" style="width:${d.probability}%;background:${d.recColor}"></div></div>
+
+    <div class="buy-zone-banner" style="background:${bzColor}11;border:1px solid ${bzColor}44">
+      <span class="bz-lbl" style="color:${bzColor}">${bzText}</span>
+      <span class="bz-val" style="color:${bzColor}">₹${fmt(d.idealBuy)}</span>
+    </div>
+
+    <div class="mini-grid">
+      <div class="mini-cell">
+        <div class="mini-lbl">RSI</div>
+        <div class="mini-val" style="color:${d.rsi<30?"var(--green)":d.rsi>70?"var(--red)":"var(--text)"}">${d.rsi}</div>
+      </div>
+      <div class="mini-cell">
+        <div class="mini-lbl">PEG</div>
+        <div class="mini-val" style="color:${d.peg<1?"var(--green)":"var(--gold)"}">${d.peg.toFixed(2)}</div>
+      </div>
+      <div class="mini-cell">
+        <div class="mini-lbl">P/E</div>
+        <div class="mini-val" style="color:${d.pe<20?"var(--green)":d.pe>35?"var(--red)":"var(--text)"}">${d.pe}x</div>
+      </div>
+    </div>
+
+    ${(s.cagr3||s.cagr5)?`<div class="cagr-row">
+      ${s.cagr3?`<span class="cagr-chip" style="background:var(--green)18;color:var(--green)">3Y: ${s.cagr3}%</span>`:""}
+      ${s.cagr5?`<span class="cagr-chip" style="background:var(--accent2)18;color:var(--accent2)">5Y: ${s.cagr5}%</span>`:""}
+    </div>`:""}
+
+    <div class="scard-hint">Tap for full GARP analysis →</div>
+  </div>`;
+}
+
+// ─── TABLE RENDERER ──────────────────────────────────────────────────────────
+function renderTable(stocks){
+  const th=(k,l)=>`<th onclick="sortBy('${k}')">${l} ${state.sort===k?(state.sortDir==="desc"?"↓":"↑"):""}</th>`;
+  const rows=stocks.map(s=>{
+    const d=state.data[s.ticker]; if(!d)return "";
+    const isUp=d.change>=0;
+    const bzColor=d.buyNow?"var(--green)":d.waitForDip?"var(--gold)":"var(--muted)";
+    return `<tr data-ticker="${s.ticker}">
+      <td><div class="td-name">${s.name}</div><div class="td-sub">${s.cap} · ${s.sector}</div></td>
+      <td style="font-weight:700;font-family:Syne,sans-serif">₹${fmt(d.price)}</td>
+      <td style="color:${isUp?"var(--green)":"var(--red)"}">${isUp?"▲":"▼"} ${Math.abs(d.changePct).toFixed(2)}%</td>
+      <td style="color:var(--green);font-weight:600">₹${fmt(d.t3)}</td>
+      <td style="color:${bzColor};font-size:10px;font-weight:600">${d.buyNow?"BUY ZONE":d.waitForDip?"WAIT":"EXTENDED"}</td>
+      <td style="color:${d.peg<1?"var(--green)":"var(--gold)"}">${d.peg.toFixed(2)}</td>
+      <td style="color:${d.rsi<30?"var(--green)":d.rsi>70?"var(--red)":"var(--text)"}">${d.rsi}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;min-width:40px">
+            <div style="height:100%;width:${d.totalScore}%;background:${d.recColor};border-radius:2px"></div>
+          </div>
+          <span style="color:${d.recColor};font-weight:700;font-size:10px">${d.totalScore}</span>
+        </div>
+      </td>
+      <td>${recBadge(d.recommendation,d.recColor)}</td>
+    </tr>`;
+  }).join("");
+  return `<div class="tbl-wrap"><table>
+    <thead><tr>${th("name","STOCK")}${th("price","PRICE")}${th("changePct","CHG%")}${th("t3","3Y TARGET")}
+    <th>BUY ZONE</th>${th("peg","PEG")}${th("rsi","RSI")}${th("score","SCORE")}<th>SIGNAL</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+// ─── DETAIL PANEL ────────────────────────────────────────────────────────────
+function renderDetail(s,d){
+  const isWL=state.watchlist.includes(s.ticker);
+  const isUp=d.change>=0;
+  const bzPct=Math.max(0,Math.min(100,((d.price-d.buyZoneLow)/(d.buyZoneHigh*1.15-d.buyZoneLow))*100));
+  const seed=s.ticker.charCodeAt(0);
+
+  const techFactors=d.factors.filter(f=>f.cat==="tech");
+  const fundFactors=d.factors.filter(f=>f.cat==="fund"||f.cat==="garp");
+
+  const tabs=[
+    {id:"overview",label:"Overview"},
+    {id:"technical",label:"Technical"},
+    {id:"fundamental",label:"Fundamental"},
+    {id:"target",label:"Targets"},
+  ];
+
+  const dtab=state.detailTab;
+
+  const tabContent=()=>{
+    if(dtab==="overview") return `
+      <!-- Price hero -->
+      <div style="background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;border:1px solid ${d.recColor}44">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+          <div>
+            <div style="font-family:Syne,sans-serif;font-weight:800;font-size:32px;color:var(--text)">₹${fmt(d.price)}</div>
+            <div style="font-size:13px;color:${isUp?"var(--green)":"var(--red)"};margin-top:4px">
+              ${isUp?"▲":"▼"} ₹${Math.abs(d.change).toFixed(2)} (${Math.abs(d.changePct).toFixed(2)}%)
+            </div>
+          </div>
+          ${scoreRingSVG(d.totalScore,d.recColor,72)}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+          <div style="text-align:center;background:var(--bg2);border-radius:8px;padding:8px">
+            <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.5px">TECH SCORE</div>
+            <div style="font-family:Syne,sans-serif;font-weight:700;font-size:16px;color:var(--accent2)">${Math.min(100,d.techScore)}</div>
+          </div>
+          <div style="text-align:center;background:var(--bg2);border-radius:8px;padding:8px">
+            <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.5px">FUND SCORE</div>
+            <div style="font-family:Syne,sans-serif;font-weight:700;font-size:16px;color:var(--gold)">${Math.min(100,d.fundScore)}</div>
+          </div>
+          <div style="text-align:center;background:var(--bg2);border-radius:8px;padding:8px">
+            <div style="font-size:8px;color:var(--muted);margin-bottom:3px;letter-spacing:.5px">GARP SCORE</div>
+            <div style="font-family:Syne,sans-serif;font-weight:700;font-size:16px;color:var(--green)">${d.garpScore}</div>
+          </div>
+        </div>
+        <div style="text-align:center;padding:12px;border-radius:10px;background:${d.recColor}18;border:1px solid ${d.recColor}44">
+          <div style="font-family:Syne,sans-serif;font-weight:800;font-size:18px;color:${d.recColor};letter-spacing:1px">${d.recommendation}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px">Buy Probability: <b style="color:${d.recColor}">${d.probability}%</b></div>
+        </div>
+      </div>
+
+      <!-- Sparkline -->
+      <div style="background:var(--card);border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:8px">PRICE TREND (SIMULATED)</div>
+        <div style="width:100%">${sparkSVG(seed,d.recColor,280,50)}</div>
+      </div>
+
+      <!-- Buy zone -->
+      <div class="buy-zone-box">
+        <div style="font-size:9px;color:var(--green);letter-spacing:1.5px;font-weight:700;margin-bottom:12px">⊕ BUY ZONE ANALYSIS</div>
+        <div class="bz-range">
+          <div style="text-align:center">
+            <div style="font-size:8px;color:var(--muted);margin-bottom:3px">STRONG BUY</div>
+            <div class="bz-low">₹${fmt(d.buyZoneLow)}</div>
+          </div>
+          <div style="font-size:22px;color:var(--muted)">—</div>
+          <div style="text-align:center">
+            <div style="font-size:8px;color:var(--muted);margin-bottom:3px">IDEAL ENTRY</div>
+            <div style="font-family:Syne,sans-serif;font-weight:700;font-size:18px;color:var(--accent)">₹${fmt(d.idealBuy)}</div>
+          </div>
+          <div style="font-size:22px;color:var(--muted)">—</div>
+          <div style="text-align:center">
+            <div style="font-size:8px;color:var(--muted);margin-bottom:3px">WAIT ABOVE</div>
+            <div class="bz-high">₹${fmt(d.buyZoneHigh)}</div>
+          </div>
+        </div>
+        <div class="bz-bar">
+          <div class="bz-fill" style="width:80%;background:linear-gradient(90deg,var(--green),var(--gold))"></div>
+          <div class="bz-current" style="left:${Math.min(96,bzPct)}%"></div>
+        </div>
+        <div class="bz-notes">
+          ${d.buyNow?`✓ Current price ₹${fmt(d.price)} is within the buy zone. Consider accumulating.`:
+            d.waitForDip?`⟳ Price is slightly above ideal entry. Wait for a dip to ₹${fmt(d.idealBuy)} for better margin of safety.`:
+            `↑ Price is extended. Wait for a correction to the ₹${fmt(d.buyZoneLow)}–₹${fmt(d.idealBuy)} range.`}
+        </div>
+      </div>
+
+      <!-- CAGR -->
+      ${(s.cagr3||s.cagr5)?`<div style="background:var(--card);border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:10px">HISTORICAL CAGR</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          ${s.cagr3?`<div style="text-align:center;background:var(--green)10;border-radius:8px;padding:12px;border:1px solid var(--green)22">
+            <div style="font-size:8px;color:var(--muted);margin-bottom:4px">3-YEAR CAGR</div>
+            <div style="font-family:Syne,sans-serif;font-weight:800;font-size:24px;color:var(--green)">${s.cagr3}%</div>
+          </div>`:""}
+          ${s.cagr5?`<div style="text-align:center;background:var(--accent2)10;border-radius:8px;padding:12px;border:1px solid var(--accent2)22">
+            <div style="font-size:8px;color:var(--muted);margin-bottom:4px">5-YEAR CAGR</div>
+            <div style="font-family:Syne,sans-serif;font-weight:800;font-size:24px;color:var(--accent2)">${s.cagr5}%</div>
+          </div>`:""}
+        </div>
+      </div>`:""}
+    `;
+
+    if(dtab==="technical") return `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        ${[
+          ["RSI (14)",d.rsi,d.rsi<30?"Oversold ✓":d.rsi>70?"Overbought ✗":"Neutral",d.rsi<30?"var(--green)":d.rsi>70?"var(--red)":"var(--muted)"],
+          ["MACD",d.macd>0?`+${d.macd}`:d.macd,d.macd>0?"Bullish ✓":"Bearish ✗",d.macd>0?"var(--green)":"var(--red)"],
+          ["Stochastic",d.stoch,d.stoch<20?"Oversold ✓":d.stoch>80?"Overbought ✗":"Neutral",d.stoch<20?"var(--green)":d.stoch>80?"var(--red)":"var(--muted)"],
+          ["ADX",d.adx,d.adx>25?"Strong Trend ✓":"Weak Trend",d.adx>25?"var(--green)":"var(--muted)"],
+          ["MA 20",`₹${fmt(d.ma20)}`,d.price<d.ma20?"Below MA ✓":"Above MA",d.price<d.ma20?"var(--green)":"var(--red)"],
+          ["MA 50",`₹${fmt(d.ma50)}`,d.price<d.ma50?"Below MA ✓":"Above MA",d.price<d.ma50?"var(--green)":"var(--muted)"],
+          ["MA 200",`₹${fmt(d.ma200)}`,d.price>d.ma200?"Above LT MA ✓":"Below LT MA",d.price>d.ma200?"var(--green)":"var(--red)"],
+          ["VWAP",`₹${fmt(d.vwap)}`,d.price<d.vwap?"Below VWAP ✓":"Above VWAP",d.price<d.vwap?"var(--green)":"var(--muted)"],
+          ["BB Upper",`₹${fmt(d.bbUp)}`,"",d.price<d.bbUp?"var(--green)":"var(--red)"],
+          ["BB Lower",`₹${fmt(d.bbLow)}`,d.price<d.bbLow?"Below BB ✓":"",d.price<d.bbLow?"var(--green)":"var(--muted)"],
+          ["CCI",d.cci,d.cci<-100?"Oversold ✓":d.cci>100?"Overbought ✗":"Neutral",d.cci<-100?"var(--green)":d.cci>100?"var(--red)":"var(--muted)"],
+          ["ATR",`₹${fmt(d.atr)}`,"Volatility",d.atr>d.price*0.03?"var(--gold)":"var(--green)"],
+          ["Volume",d.volume.toLocaleString("en-IN"),d.volume>d.avgVol*1.5?"Above Avg ✓":d.volume<d.avgVol*0.7?"Below Avg":"Avg",d.volume>d.avgVol*1.5?"var(--green)":"var(--muted)"],
+          ["MFI",d.mfi,d.mfi<20?"Oversold ✓":d.mfi>80?"Overbought ✗":"Neutral",d.mfi<20?"var(--green)":d.mfi>80?"var(--red)":"var(--muted)"],
+        ].map(([l,v,s,c])=>`
+          <div class="garp-cell">
+            <div class="garp-lbl">${l}</div>
+            <div class="garp-val" style="font-size:14px">${v}</div>
+            ${s?`<div class="garp-status" style="color:${c}">${s}</div>`:""}
+          </div>
+        `).join("")}
+      </div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:12px;letter-spacing:1.5px">TECHNICAL SIGNALS</div>
+      <div class="factor-list">
+        ${techFactors.map(f=>`
+          <div class="factor-row ${f.bull===true?"bull":f.bull===false?"bear":""}">
+            <div class="factor-left">
+              <span style="font-size:12px">${f.bull===true?"🟢":f.bull===false?"🔴":"⚪"}</span>
+              <span class="factor-label">${f.l}</span>
+            </div>
+            <span class="factor-val" style="color:${f.bull===true?"var(--green)":f.bull===false?"var(--red)":"var(--muted)"}">${f.v}</span>
+          </div>
+        `).join("")}
+      </div>
+    `;
+
+    if(dtab==="fundamental") return `
+      <div style="background:var(--card);border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid var(--gold)33">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span class="garp-badge">◈ GARP ANALYSIS</span>
+          <span style="font-size:9px;color:var(--muted)">Growth at a Reasonable Price</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div style="text-align:center;background:var(--bg2);padding:10px;border-radius:8px">
+            <div style="font-size:8px;color:var(--muted);margin-bottom:3px">PEG RATIO</div>
+            <div style="font-family:Syne,sans-serif;font-weight:800;font-size:20px;color:${d.peg<1?"var(--green)":d.peg<1.5?"var(--gold)":"var(--red)"}">${d.peg.toFixed(2)}</div>
+            <div style="font-size:8px;color:${d.peg<1?"var(--green)":"var(--muted)"}">Target: &lt;1.0</div>
+          </div>
+          <div style="text-align:center;background:var(--bg2);padding:10px;border-radius:8px">
+            <div style="font-size:8px;color:var(--muted);margin-bottom:3px">GARP SCORE</div>
+            <div style="font-family:Syne,sans-serif;font-weight:800;font-size:20px;color:${d.garpScore>70?"var(--green)":d.garpScore>50?"var(--gold)":"var(--red)"}">${d.garpScore}/100</div>
+            <div style="font-size:8px;color:var(--muted)">${d.garpScore>70?"Excellent":d.garpScore>50?"Good":"Weak"}</div>
+          </div>
+          <div style="text-align:center;background:var(--bg2);padding:10px;border-radius:8px">
+            <div style="font-size:8px;color:var(--muted);margin-bottom:3px">EPS GROWTH</div>
+            <div style="font-family:Syne,sans-serif;font-weight:800;font-size:20px;color:${d.eps_gr>20?"var(--green)":"var(--text)"}">${d.eps_gr}%</div>
+            <div style="font-size:8px;color:var(--muted)">Annual</div>
+          </div>
+        </div>
+      </div>
+      <div class="garp-grid">
+        ${[
+          ["P/E Ratio",`${d.pe}x`,d.pe<20?"Attractive ✓":d.pe>35?"Expensive ✗":"Fair",d.pe<20?"var(--green)":d.pe>35?"var(--red)":"var(--muted)"],
+          ["P/BV",`${d.pbv}x`,"",d.pbv<2?"var(--green)":"var(--muted)"],
+          ["ROE",`${d.roe}%`,d.roe>15?"Strong ✓":"Moderate",d.roe>15?"var(--green)":"var(--muted)"],
+          ["ROCE",`${d.roce}%`,d.roce>12?"Good ✓":"Moderate",d.roce>12?"var(--green)":"var(--muted)"],
+          ["Debt/Equity",d.de_ratio,d.de_ratio<0.5?"Low Debt ✓":d.de_ratio>1?"High Debt ✗":"Moderate",d.de_ratio<0.5?"var(--green)":d.de_ratio>1?"var(--red)":"var(--muted)"],
+          ["PAT Growth",`${d.pat_gr}%`,d.pat_gr>20?"Strong ✓":"Moderate",d.pat_gr>20?"var(--green)":"var(--muted)"],
+          ["Rev Growth",`${d.rev_gr}%`,"Annual",d.rev_gr>15?"var(--green)":"var(--muted)"],
+          ["Current Ratio",d.curr_rat,d.curr_rat>2?"Healthy ✓":d.curr_rat<1?"Weak ✗":"Fair",d.curr_rat>2?"var(--green)":d.curr_rat<1?"var(--red)":"var(--muted)"],
+          ["Div Yield",`${d.div_yld}%`,"Annual",d.div_yld>1?"var(--green)":"var(--muted)"],
+          ["EPS Growth",`${d.eps_gr}%`,d.eps_gr>20?"GARP ✓":"Moderate",d.eps_gr>20?"var(--green)":"var(--muted)"],
+        ].map(([l,v,st,c])=>`
+          <div class="garp-cell">
+            <div class="garp-lbl">${l}</div>
+            <div class="garp-val">${v}</div>
+            ${st?`<div class="garp-status" style="color:${c}">${st}</div>`:""}
+          </div>
+        `).join("")}
+      </div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:10px;letter-spacing:1.5px">FUNDAMENTAL SIGNALS</div>
+      <div class="factor-list">
+        ${fundFactors.map(f=>`
+          <div class="factor-row ${f.bull===true?"bull":f.bull===false?"bear":""}">
+            <div class="factor-left">
+              <span style="font-size:12px">${f.bull===true?"🟢":f.bull===false?"🔴":"⚪"}</span>
+              <span class="factor-label">${f.l}</span>
+            </div>
+            <span class="factor-val" style="color:${f.bull===true?"var(--green)":f.bull===false?"var(--red)":"var(--muted)"}">${f.v}</span>
+          </div>
+        `).join("")}
+      </div>
+    `;
+
+    if(dtab==="target") return `
+      <!-- Primary target -->
+      <div class="target-box" style="background:var(--green)08;border-color:var(--green)44;margin-bottom:16px">
+        <div style="font-size:9px;color:var(--green);letter-spacing:1.5px;font-weight:700">◈ LONG-TERM TARGET PRICE</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:4px">Based on GARP + PEG + Historical CAGR + Technical Trend</div>
+        <div class="target-main">
+          <div>
+            <div class="target-price" style="color:var(--green)">₹${fmt(d.t3)}</div>
+            <div class="target-timeframe" style="color:var(--muted)">3-YEAR HORIZON</div>
+          </div>
+          <div style="text-align:right">
+            <div class="target-upside" style="color:var(--green)">+${d.upside3}%</div>
+            <div style="font-size:9px;color:var(--muted)">from current price</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Horizon grid -->
+      <div style="font-size:9px;color:var(--muted);letter-spacing:1.5px;margin-bottom:10px">PRICE TARGETS BY HORIZON</div>
+      <div class="horizon-row" style="margin-bottom:16px">
+        <div class="horizon-cell">
+          <div class="hz-lbl">1-YEAR</div>
+          <div class="hz-price" style="color:var(--accent2)">₹${fmt(d.t1)}</div>
+          <div class="hz-upside" style="color:var(--accent2)">${pct(d.upside1)}</div>
+        </div>
+        <div class="horizon-cell" style="border-color:var(--gold)44;background:var(--gold)08">
+          <div class="hz-lbl">2-YEAR</div>
+          <div class="hz-price" style="color:var(--gold)">₹${fmt(d.t2)}</div>
+          <div class="hz-upside" style="color:var(--gold)">${pct(d.upside2)}</div>
+        </div>
+        <div class="horizon-cell" style="border-color:var(--green)44;background:var(--green)08">
+          <div class="hz-lbl">3-YEAR</div>
+          <div class="hz-price" style="color:var(--green)">₹${fmt(d.t3)}</div>
+          <div class="hz-upside" style="color:var(--green)">${pct(d.upside3)}</div>
+        </div>
+      </div>
+
+      <!-- Target methodology -->
+      <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid var(--border)">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:12px">TARGET METHODOLOGY</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${[
+            ["Historical CAGR Avg", `${((s.cagr3||15)+(s.cagr5||15))/2}%`, "var(--accent2)"],
+            ["GARP Multiplier", `${d.garpScore>70?"2.5x":d.garpScore>50?"2.0x":"1.4x"} (PEG: ${d.peg.toFixed(2)})`, "var(--gold)"],
+            ["EPS Growth Rate", `${d.eps_gr}% annually`, "var(--green)"],
+            ["Margin of Safety", d.price<=d.idealBuy?"Applied ✓":"Not Applied", d.price<=d.idealBuy?"var(--green)":"var(--muted)"],
+            ["Confidence Level", `${d.probability}%`, d.recColor],
+          ].map(([l,v,c])=>`
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+              <span style="font-size:10px;color:var(--muted)">${l}</span>
+              <span style="font-size:10px;font-weight:600;color:${c}">${v}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <!-- Risk factors -->
+      <div style="background:var(--red)08;border:1px solid var(--red)22;border-radius:12px;padding:14px;margin-bottom:16px">
+        <div style="font-size:9px;color:var(--red);letter-spacing:1px;margin-bottom:8px;font-weight:700">⚠ RISK FACTORS</div>
+        <ul style="font-size:10px;color:var(--muted);line-height:1.8;padding-left:16px">
+          <li>Market sentiment changes can affect all stocks regardless of fundamentals</li>
+          <li>Sector-specific regulatory or macro risks for ${s.sector}</li>
+          <li>Earnings misses may trigger sharp corrections</li>
+          <li>These are algorithmic estimates — not a guarantee of returns</li>
+        </ul>
+      </div>
+
+      <div style="padding:12px;border-radius:8px;background:var(--card);border:1px solid var(--border);font-size:9px;color:var(--muted);line-height:1.7">
+        ⚠ Long-term targets are model estimates based on historical growth, GARP metrics, and current technicals.
+        Always verify with real-time NSE data and a SEBI-registered advisor before investing. Prices are simulated.
+      </div>
+    `;
+  };
+
+  return `
+    <div style="padding:20px 18px 0">
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+        <div>
+          <div style="font-family:Syne,sans-serif;font-weight:800;font-size:20px;color:var(--text);margin-bottom:6px">${s.name}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="tag tag-cap">${s.cap}</span>
+            <span class="tag tag-sector">${s.sector}</span>
+            ${d.garpScore>60?`<span class="garp-badge" style="font-size:8px;padding:2px 8px">◈ GARP PICK</span>`:""}
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button onclick="toggleWatchlist('${s.ticker}')"
+            style="background:${isWL?"var(--gold)22":"var(--card)"};border:1px solid ${isWL?"var(--gold)":"var(--border)"};
+            color:${isWL?"var(--gold)":"var(--muted)"};padding:6px 10px;border-radius:8px;cursor:pointer;font-size:14px">
+            ${isWL?"★":"☆"}
+          </button>
+          <button onclick="closeDetail()"
+            style="width:30px;height:30px;border-radius:50%;background:var(--card);border:1px solid var(--border);
+            color:var(--text);cursor:pointer;font-size:13px">✕</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:16px;gap:0;overflow-x:auto">
+        ${tabs.map(t=>`
+          <button onclick="setDetailTab('${t.id}')"
+            style="padding:8px 14px;border:none;border-bottom:2px solid ${dtab===t.id?"var(--accent)":"transparent"};
+            background:transparent;color:${dtab===t.id?"var(--accent)":"var(--muted)"};font-family:'JetBrains Mono',monospace;
+            font-size:10px;font-weight:600;letter-spacing:.5px;cursor:pointer;white-space:nowrap;flex-shrink:0">
+            ${t.label}
+          </button>
+        `).join("")}
+      </div>
+
+      ${tabContent()}
+    </div>
+  `;
+}
+
+// ─── FILTERED + SORTED LIST ──────────────────────────────────────────────────
+function getFiltered(){
+  return state.stocks.filter(s=>{
+    const d=state.data[s.ticker];
+    if(state.tab==="watchlist" && !state.watchlist.includes(s.ticker)) return false;
+    if(state.tab==="garp" && d && d.garpScore<60) return false;
+    if(state.search && !s.name.toLowerCase().includes(state.search.toLowerCase()) && !s.ticker.toLowerCase().includes(state.search.toLowerCase())) return false;
+    if(state.sector!=="All" && s.sector!==state.sector) return false;
+    if(state.cap!=="All" && s.cap!==state.cap) return false;
+    if(state.signal!=="All" && s.signal!==state.signal[0]) return false;
+    if(state.rec!=="All" && d && d.recommendation!==state.rec) return false;
+    return true;
+  }).sort((a,b)=>{
+    const da=state.data[a.ticker], db=state.data[b.ticker];
+    let va=0,vb=0;
+    if(state.sort==="score"){va=da?.totalScore||0;vb=db?.totalScore||0}
+    else if(state.sort==="price"){va=da?.price||0;vb=db?.price||0}
+    else if(state.sort==="changePct"){va=da?.changePct||0;vb=db?.changePct||0}
+    else if(state.sort==="t3"){va=da?.t3||0;vb=db?.t3||0}
+    else if(state.sort==="peg"){va=da?.peg||99;vb=db?.peg||99;return state.sortDir==="asc"?va-vb:vb-va}
+    else if(state.sort==="rsi"){va=da?.rsi||50;vb=db?.rsi||50}
+    else if(state.sort==="garp"){va=da?.garpScore||0;vb=db?.garpScore||0}
+    else if(state.sort==="name"){return state.sortDir==="asc"?a.name.localeCompare(b.name):b.name.localeCompare(a.name)}
+    return state.sortDir==="desc"?vb-va:va-vb;
+  });
+}
+
+// ─── MAIN RENDER ─────────────────────────────────────────────────────────────
+function render(){
+  const t=state.dark;
+  document.documentElement.className=t?"":"light";
+  const filtered=getFiltered();
+  const bullCount=Object.values(state.data).filter(d=>d?.totalScore>=60).length;
+  const garpCount=Object.values(state.data).filter(d=>d?.garpScore>=60).length;
+  const avgScore=Object.values(state.data).length?Math.round(Object.values(state.data).reduce((s,d)=>s+(d?.totalScore||0),0)/Object.values(state.data).length):0;
+
+  const sortOptions=[
+    {k:"score",l:"Score"},{k:"garp",l:"GARP"},{k:"t3",l:"3Y Target"},
+    {k:"peg",l:"PEG"},{k:"price",l:"Price"},{k:"changePct",l:"Change"},{k:"name",l:"Name"}
+  ];
+
+  document.getElementById("app").innerHTML=`
+    <div>
+      <!-- Header -->
+      <header class="header">
+        <div class="header-inner">
+          <div class="logo-wrap">
+            <div class="logo-icon">📈</div>
+            <div>
+              <div class="logo-text">Nifty Pulse</div>
+              <div class="logo-sub">GARP · NSE Intelligence</div>
+            </div>
+          </div>
+          <div class="header-right">
+            <button class="icon-btn" onclick="toggleView()">
+              ${state.view==="grid"?"⊟":"⊞"}
+            </button>
+            <button class="icon-btn accent" onclick="toggleDark()">
+              ${t?"☀":"◑"}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Market bar -->
+      <div class="market-bar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="market-badge ${state.marketOpen?"open":"closed"}">
+            <span class="dot ${state.marketOpen?"open":"closed"} ${state.marketOpen?"pulse-anim":""}"></span>
+            ${state.marketOpen?"NSE LIVE":"MARKET CLOSED"}
+          </div>
+          ${state.lastUpdated?`<span style="font-size:9px;color:var(--muted)">${state.lastUpdated.toLocaleTimeString("en-IN",{timeZone:"Asia/Kolkata"})} IST</span>`:""}
+        </div>
+        <div class="stats-row">
+          <div class="stat-chip"><span class="stat-val" style="color:var(--accent)">${STOCKS.length}</span><span class="stat-lbl">Stocks</span></div>
+          <div class="stat-chip"><span class="stat-val" style="color:var(--green)">${bullCount}</span><span class="stat-lbl">Buy</span></div>
+          <div class="stat-chip"><span class="stat-val" style="color:var(--gold)">${garpCount}</span><span class="stat-lbl">GARP</span></div>
+          <div class="stat-chip"><span class="stat-val" style="color:var(--accent2)">${avgScore}</span><span class="stat-lbl">Avg Score</span></div>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div style="display:flex;border-bottom:1px solid var(--border);background:var(--card);overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none">
+        ${[
+          {id:"all",l:"All Stocks",icon:"⊞"},
+          {id:"garp",l:"GARP Picks",icon:"◈"},
+          {id:"watchlist",l:`Watchlist (${state.watchlist.length})`,icon:"★"},
+        ].map(tab=>`
+          <button onclick="setTab('${tab.id}')"
+            style="padding:10px 16px;border:none;border-bottom:2px solid ${state.tab===tab.id?"var(--accent)":"transparent"};
+            background:transparent;color:${state.tab===tab.id?"var(--accent)":"var(--muted)"};font-family:'JetBrains Mono',monospace;
+            font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;white-space:nowrap;flex-shrink:0">
+            ${tab.icon} ${tab.l}
+          </button>
+        `).join("")}
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <div class="search-row">
+          <div class="search-wrap">
+            <span style="color:var(--muted);font-size:13px">⌕</span>
+            <input id="search-input" value="${state.search}" placeholder="Search stocks or tickers..." oninput="onSearch(this.value)"/>
+          </div>
+          <div class="view-toggle">
+            <button class="view-btn ${state.view==="grid"?"active":""}" onclick="setView('grid')">⊞</button>
+            <button class="view-btn ${state.view==="table"?"active":""}" onclick="setView('table')">⊟</button>
+          </div>
+        </div>
+        <div class="filter-scroll">
+          <select class="filter-sel" onchange="setSector(this.value)">
+            ${SECTORS.map(s=>`<option value="${s}" ${state.sector===s?"selected":""}>${s}</option>`).join("")}
+          </select>
+          <select class="filter-sel" onchange="setCap(this.value)">
+            ${CAPS.map(c=>`<option value="${c}" ${state.cap===c?"selected":""}>${c}</option>`).join("")}
+          </select>
+          <select class="filter-sel" onchange="setSignalF(this.value)">
+            ${["All","S - Strong","U - Uncertain","D - Weak"].map(s=>`<option value="${s}" ${state.signal===s?"selected":""}>${s}</option>`).join("")}
+          </select>
+          <select class="filter-sel" onchange="setRec(this.value)">
+            ${["All","STRONG BUY","BUY","HOLD","CAUTION","AVOID"].map(r=>`<option value="${r}" ${state.rec===r?"selected":""}>${r}</option>`).join("")}
+          </select>
+          <button class="sort-btn" onclick="refreshData()" style="padding:6px 12px">↻ Refresh</button>
+        </div>
+        <div class="sort-row">
+          <span class="sort-lbl">SORT:</span>
+          ${sortOptions.map(o=>`
+            <button class="sort-btn ${state.sort===o.k?"active":""}" onclick="sortBy('${o.k}')">
+              ${o.l}${state.sort===o.k?(state.sortDir==="desc"?"↓":"↑"):""}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+
+      <!-- Content -->
+      <main>
+        ${filtered.length===0?`
+          <div class="empty">
+            <div class="empty-icon">◎</div>
+            <div>No stocks match your filters</div>
+          </div>
+        `:state.view==="grid"?`
+          <div class="grid stagger">
+            ${filtered.map(s=>{
+              const d=state.data[s.ticker];
+              return d?renderCard(s,d):"";
+            }).join("")}
+          </div>
+        `:renderTable(filtered)}
+        <div style="margin-top:20px;font-size:9px;color:var(--muted);text-align:center;letter-spacing:1px;line-height:1.8">
+          ⚠ SIMULATED PRICES · INFORMATIONAL ONLY · NOT SEBI REGISTERED ADVICE<br>
+          Install as PWA: Tap Share → "Add to Home Screen" on iOS/Android
+        </div>
+      </main>
+
+      <!-- Bottom Nav -->
+      <nav class="bottom-nav">
+        <div class="nav-item ${state.tab==="all"?"active":""}" onclick="setTab('all')">
+          <span class="nav-icon">⊞</span>
+          <span class="nav-label">ALL</span>
+        </div>
+        <div class="nav-item ${state.tab==="garp"?"active":""}" onclick="setTab('garp')">
+          <span class="nav-icon">◈</span>
+          <span class="nav-label">GARP</span>
+        </div>
+        <div class="nav-item ${state.tab==="watchlist"?"active":""}" onclick="setTab('watchlist')">
+          <span class="nav-icon">★</span>
+          <span class="nav-label">WATCHLIST</span>
+        </div>
+        <div class="nav-item" onclick="refreshData()">
+          <span class="nav-icon">↻</span>
+          <span class="nav-label">REFRESH</span>
+        </div>
+        <div class="nav-item" onclick="toggleDark()">
+          <span class="nav-icon">${t?"☀":"◑"}</span>
+          <span class="nav-label">${t?"LIGHT":"DARK"}</span>
+        </div>
+      </nav>
+
+      <!-- Detail overlay -->
+      ${state.selected?`
+        <div class="overlay" onclick="closeDetail()"></div>
+        <div class="panel" id="detail-panel">
+          ${renderDetail(state.selected.stock, state.selected.data)}
+        </div>
+      `:""}
+    </div>
+  `;
+
+  // Reattach card listeners
+  document.querySelectorAll(".scard").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const ticker=el.dataset.ticker;
+      const stock=STOCKS.find(s=>s.ticker===ticker);
+      const data=state.data[ticker];
+      if(stock&&data){state.selected={stock,data};state.detailTab="overview";render();}
+    });
+  });
+  document.querySelectorAll("tbody tr[data-ticker]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const ticker=el.dataset.ticker;
+      const stock=STOCKS.find(s=>s.ticker===ticker);
+      const data=state.data[ticker];
+      if(stock&&data){state.selected={stock,data};state.detailTab="overview";render();}
+    });
+  });
+}
+
+// ─── GLOBAL HANDLERS ─────────────────────────────────────────────────────────
+window.toggleDark=()=>{state.dark=!state.dark;render()};
+window.toggleView=()=>{state.view=state.view==="grid"?"table":"grid";render()};
+window.setView=(v)=>{state.view=v;render()};
+window.setTab=(t)=>{state.tab=t;render()};
+window.onSearch=(v)=>{state.search=v;render()};
+window.setSector=(v)=>{state.sector=v;render()};
+window.setCap=(v)=>{state.cap=v;render()};
+window.setSignalF=(v)=>{state.signal=v;render()};
+window.setRec=(v)=>{state.rec=v;render()};
+window.closeDetail=()=>{state.selected=null;render()};
+window.setDetailTab=(t)=>{state.detailTab=t;if(state.selected){const {stock,data}=state.selected;state.selected={stock,data:state.data[stock.ticker]};render();}};
+window.sortBy=(k)=>{
+  if(state.sort===k)state.sortDir=state.sortDir==="asc"?"desc":"asc";
+  else{state.sort=k;state.sortDir=k==="peg"?"asc":"desc";}
+  render();
+};
+window.toggleWatchlist=(ticker)=>{
+  const idx=state.watchlist.indexOf(ticker);
+  if(idx>=0)state.watchlist.splice(idx,1);
+  else state.watchlist.push(ticker);
+  localStorage.setItem("np_watchlist",JSON.stringify(state.watchlist));
+  if(state.selected)state.selected={...state.selected};
+  render();
+};
+window.refreshData=()=>{
+  state.marketOpen=isMarketOpen();
+  const newData={};
+  STOCKS.forEach(s=>{newData[s.ticker]=analyzeStock(s);});
+  state.data=newData;
+  state.lastUpdated=new Date();
+  if(state.selected){
+    const ticker=state.selected.stock.ticker;
+    state.selected={...state.selected,data:newData[ticker]};
+  }
+  render();
+};
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+refreshData();
+setInterval(()=>{
+  state.marketOpen=isMarketOpen();
+  const newData={};
+  STOCKS.forEach(s=>{newData[s.ticker]=analyzeStock(s);});
+  state.data=newData;
+  state.lastUpdated=new Date();
+  if(state.selected){
+    const ticker=state.selected.stock.ticker;
+    state.selected={...state.selected,data:newData[ticker]};
+  }
+  render();
+}, 15000);
+
+// ─── SERVICE WORKER ──────────────────────────────────────────────────────────
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "Nifty Pulse — Stock Intelligence",
+  "short_name": "Nifty Pulse",
+  "description": "GARP-based NSE stock intelligence with live signals, long-term targets and buy zones",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0f",
+  "theme_color": "#7c6af7",
+  "categories": ["finance"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
